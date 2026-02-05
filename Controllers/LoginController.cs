@@ -8,9 +8,9 @@ namespace SimpleLog.Api.Controllers;
 [Route("api/login")]
 public class LoginController : ControllerBase
 {
-    private readonly IAppInsightsLogger _logger;
+    private readonly IAzureMonitorLogger _logger;
 
-    public LoginController(IAppInsightsLogger logger)
+    public LoginController(IAzureMonitorLogger logger)
     {
         _logger = logger;
     }

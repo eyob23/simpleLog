@@ -11,7 +11,7 @@ public static class WorkflowEventHelper
     /// Tracks a workflow action as a custom event with required and optional properties.
     /// </summary>
     public static bool TryTrackWorkflowAction(
-        IAppInsightsLogger logger,
+        IAzureMonitorLogger logger,
         string? userId,
         string? action,
         string? role,

@@ -7,9 +7,9 @@ namespace SimpleLog.Api.Controllers;
 [Route("api/[controller]")]
 public class HealthController : ControllerBase
 {
-    private readonly IAppInsightsLogger _logger;
+    private readonly IAzureMonitorLogger _logger;
 
-    public HealthController(IAppInsightsLogger logger)
+    public HealthController(IAzureMonitorLogger logger)
     {
         _logger = logger;
     }

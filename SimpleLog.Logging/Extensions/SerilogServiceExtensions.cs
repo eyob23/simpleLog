@@ -1,10 +1,8 @@
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
-using Serilog.Sinks.ApplicationInsights.TelemetryConverters;
 
 namespace SimpleLog.Logging.Extensions;
 
@@ -21,51 +19,24 @@ public static class SerilogServiceExtensions
     /// <returns>The host builder for chaining.</returns>
     public static IHostBuilder AddSerilogLogging(this IHostBuilder builder, IConfiguration configuration)
     {
-        var appInsightsConnectionString = configuration["ApplicationInsights:ConnectionString"];
-
-        if (!string.IsNullOrEmpty(appInsightsConnectionString))
+        return builder.UseSerilog((context, services, loggerConfiguration) =>
         {
-            return builder.UseSerilog((context, services, loggerConfiguration) =>
-            {
-                loggerConfiguration
-                    .ReadFrom.Configuration(context.Configuration)
-                    .ReadFrom.Services(services)
-                    .Enrich.FromLogContext()
-                    .Enrich.WithProperty("Application", "SimpleLog.Api")
-                    .MinimumLevel.Debug()
-                    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                    .MinimumLevel.Override("System", LogEventLevel.Warning)
-                    .WriteTo.Console()
-                    .WriteTo.File(
-                        path: "Logs/simplelog-.log",
-                        rollingInterval: RollingInterval.Day,
-                        retainedFileCountLimit: 14,
-                        shared: true)
-                    .WriteTo.ApplicationInsights(
-                        services.GetRequiredService<TelemetryConfiguration>(),
-                        TelemetryConverter.Traces);
-            });
-        }
-        else
-        {
-            return builder.UseSerilog((context, services, loggerConfiguration) =>
-            {
-                loggerConfiguration
-                    .ReadFrom.Configuration(context.Configuration)
-                    .Enrich.FromLogContext()
-                    .Enrich.WithProperty("Application", "SimpleLog.Api")
-                    .MinimumLevel.Debug()
-                    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
-                    .WriteTo.Console()
-                    .WriteTo.File(
-                        path: "Logs/simplelog-.log",
-                        rollingInterval: RollingInterval.Day,
-                        retainedFileCountLimit: 14,
-                        shared: true);
-            });
-        }
+            loggerConfiguration
+                .ReadFrom.Configuration(context.Configuration)
+                .ReadFrom.Services(services)
+                .Enrich.FromLogContext()
+                .Enrich.WithProperty("Application", "SimpleLog.Api")
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                .MinimumLevel.Override("System", LogEventLevel.Warning)
+                .WriteTo.Console()
+                .WriteTo.File(
+                    path: "Logs/simplelog-.log",
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 14,
+                    shared: true);
+        });
     }
 
     /// <summary>

@@ -16,19 +16,8 @@ try
     // Add services to the container
     builder.Services.AddControllers();
 
-    // Configure Application Insights and SimpleLog logging
-    var connectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
-    if (!string.IsNullOrEmpty(connectionString))
-    {
-        // Use the extension method with connection string
-        builder.Services.AddSimpleLogLogging(connectionString);
-    }
-    else
-    {
-        // Add basic logging without Application Insights for local development
-        Console.WriteLine("WARNING: Application Insights connection string not configured. Logging will be limited.");
-        builder.Services.AddSimpleLogLogging();
-    }
+    // Configure Azure Monitor OpenTelemetry logging
+    builder.Services.AddAzureMonitorOpenTelemetryLogging(builder.Configuration);
 
     // Add Swagger/OpenAPI support
     builder.Services.AddEndpointsApiExplorer();
