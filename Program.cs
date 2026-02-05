@@ -1,12 +1,12 @@
-using Serilog;
+using SimpleLog.Logging;
 using SimpleLog.Logging.Extensions;
 
 // Configure bootstrap logger for startup
-Log.Logger = SerilogServiceExtensions.CreateBootstrapLogger();
+BootstrapLogger.Initialize();
 
 try
 {
-    Log.Information("Starting SimpleLog API");
+    BootstrapLogger.Information("Starting SimpleLog API");
 
     var builder = WebApplication.CreateBuilder(args);
 
@@ -53,9 +53,9 @@ try
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "Application terminated unexpectedly");
+    BootstrapLogger.Fatal(ex, "Application terminated unexpectedly");
 }
 finally
 {
-    Log.CloseAndFlush();
+    BootstrapLogger.CloseAndFlush();
 }
