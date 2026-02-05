@@ -1,0 +1,45 @@
+## Logs
+bin/
+obj/
+*.log
+
+## User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Visual Studio cache/options
+.vs/
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+
+## NuGet Packages
+*.nupkg
+*.snupkg
+packages/
+
+## Test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+## IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+## macOS
+.DS_Store
+
+## Application Insights
+ApplicationInsights.config

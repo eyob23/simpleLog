@@ -1,0 +1,91 @@
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.ApplicationInsights.TelemetryConverters;
+
+namespace SimpleLog.Logging.Extensions;
+
+/// <summary>
+/// Extension methods for configuring Serilog logging services.
+/// </summary>
+public static class SerilogServiceExtensions
+{
+    /// <summary>
+    /// Configures Serilog as the logging provider with Application Insights integration.
+    /// </summary>
+    /// <param name="builder">The host builder.</param>
+    /// <param name="configuration">The configuration.</param>
+    /// <returns>The host builder for chaining.</returns>
+    public static IHostBuilder AddSerilogLogging(this IHostBuilder builder, IConfiguration configuration)
+    {
+        var appInsightsConnectionString = configuration["ApplicationInsights:ConnectionString"];
+
+        if (!string.IsNullOrEmpty(appInsightsConnectionString))
+        {
+            return builder.UseSerilog((context, services, loggerConfiguration) =>
+            {
+                loggerConfiguration
+                    .ReadFrom.Configuration(context.Configuration)
+                    .ReadFrom.Services(services)
+                    .Enrich.FromLogContext()
+                    .Enrich.WithProperty("Application", "SimpleLog.Api")
+                    .MinimumLevel.Debug()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                    .MinimumLevel.Override("System", LogEventLevel.Warning)
+                    .WriteTo.Console()
+                    .WriteTo.File(
+                        path: "Logs/simplelog-.log",
+                        rollingInterval: RollingInterval.Day,
+                        retainedFileCountLimit: 14,
+                        shared: true)
+                    .WriteTo.ApplicationInsights(
+                        services.GetRequiredService<TelemetryConfiguration>(),
+                        TelemetryConverter.Traces);
+            });
+        }
+        else
+        {
+            return builder.UseSerilog((context, services, loggerConfiguration) =>
+            {
+                loggerConfiguration
+                    .ReadFrom.Configuration(context.Configuration)
+                    .Enrich.FromLogContext()
+                    .Enrich.WithProperty("Application", "SimpleLog.Api")
+                    .MinimumLevel.Debug()
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                    .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+                    .WriteTo.Console()
+                    .WriteTo.File(
+                        path: "Logs/simplelog-.log",
+                        rollingInterval: RollingInterval.Day,
+                        retainedFileCountLimit: 14,
+                        shared: true);
+            });
+        }
+    }
+
+    /// <summary>
+    /// Creates the initial bootstrap logger for application startup.
+    /// </summary>
+    /// <returns>The bootstrap logger configuration.</returns>
+    public static Serilog.ILogger CreateBootstrapLogger()
+    {
+        return new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+            .Enrich.FromLogContext()
+            .Enrich.WithProperty("Application", "SimpleLog.Api")
+            .WriteTo.Console()
+            .WriteTo.File(
+                path: "Logs/simplelog-.log",
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 14,
+                shared: true)
+            .CreateBootstrapLogger();
+    }
+}
