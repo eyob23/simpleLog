@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SimpleLog.Logging.Interfaces;
+using SimpleLog.Logging.Workflow;
 
 namespace SimpleLog.Api.Controllers;
 
@@ -39,34 +40,19 @@ public class WorkflowController : ControllerBase
             return BadRequest("Request body is required.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.UserId) ||
-            string.IsNullOrWhiteSpace(request.Role) ||
-            string.IsNullOrWhiteSpace(request.Permission) ||
-            string.IsNullOrWhiteSpace(request.WorkflowId) ||
-            string.IsNullOrWhiteSpace(request.WorkflowStateId))
+        if (!WorkflowEventHelper.TryTrackWorkflowAction(
+                _logger,
+                request.UserId,
+                action,
+                request.Role,
+                request.Permission,
+                request.WorkflowId,
+                request.WorkflowStateId,
+                request.Properties,
+                out var error))
         {
-            return BadRequest("All fields are required: userId, role, permission, workflowId, workflowStateId.");
+            return BadRequest(error);
         }
-
-        var properties = new Dictionary<string, string>
-        {
-            { "userId", request.UserId },
-            { "action", action },
-            { "role", request.Role },
-            { "permission", request.Permission },
-            { "workflowId", request.WorkflowId },
-            { "workflowstateid", request.WorkflowStateId }
-        };
-
-        if (request.Properties is not null)
-        {
-            foreach (var kvp in request.Properties)
-            {
-                properties.TryAdd(kvp.Key, kvp.Value);
-            }
-        }
-
-        _logger.TrackEvent("WorkflowAction", properties);
         _logger.LogInformation("Workflow action logged: {Action} for workflow {WorkflowId}", action, request.WorkflowId);
 
         return Ok(new

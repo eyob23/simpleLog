@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net7.0;net8.0</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>SimpleLog.Logging</PackageId>
     <Version>1.0.0</Version>
     <Authors>SimpleLog</Authors>
-    <Description>Application Insights and Serilog logging utilities for SimpleLog.</Description>
-    <PackageTags>logging;serilog;applicationinsights;telemetry</PackageTags>
+    <Description>Application Insights and Serilog logging utilities for SimpleLog. Supports .NET 7.0 and .NET 8.0.</Description>
+    <PackageTags>logging;serilog;applicationinsights;telemetry;net7;net8</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
