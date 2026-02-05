@@ -45,4 +45,12 @@ public interface IAzureMonitorLogger
     /// Tracks a dependency call (e.g., external API, database).
     /// </summary>
     void TrackDependency(string dependencyTypeName, string dependencyName, string data, DateTimeOffset startTime, TimeSpan duration, bool success);
+
+    /// <summary>
+    /// Logs a custom event that will be stored in Application Insights customEvents table.
+    /// Uses OpenTelemetry's microsoft.custom_event.name semantic convention.
+    /// </summary>
+    /// <param name="eventName">The name of the custom event</param>
+    /// <param name="additionalAttributes">Optional additional attributes for the event</param>
+    void LogCustomEvent(string eventName, params object[] additionalAttributes);
 }

@@ -17,10 +17,15 @@ public class AzureMonitorLogger : IAzureMonitorLogger
     private static readonly ConcurrentDictionary<string, Histogram<double>> Histograms = new();
 
     private readonly ILogger<AzureMonitorLogger> _logger;
+    private readonly ILogger _customEventLogger;
 
-    public AzureMonitorLogger(ILogger<AzureMonitorLogger> logger)
+    public AzureMonitorLogger(ILogger<AzureMonitorLogger> logger, ILoggerFactory loggerFactory)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        // Get a logger instance directly from the factory to ensure OpenTelemetry can capture custom events
+        // This bypasses Serilog's interception for the custom event pattern
+        _customEventLogger = loggerFactory?.CreateLogger("SimpleLog.CustomEvents") 
+            ?? throw new ArgumentNullException(nameof(loggerFactory));
     }
 
     public void LogInformation(string message, params object[] args)
@@ -69,6 +74,37 @@ public class AzureMonitorLogger : IAzureMonitorLogger
         AddLogEvent("Critical", message, exception);
     }
 
+    /// <summary>
+    /// Logs a custom event that will be stored in Application Insights customEvents table.
+    /// Uses OpenTelemetry's microsoft.custom_event.name semantic convention via structured logging.
+    /// </summary>
+    /// <param name="eventName">The name of the custom event</param>
+    /// <param name="additionalAttributes">Optional additional attributes for the event</param>
+    public void LogCustomEvent(string eventName, params object[] additionalAttributes)
+    {
+        // Per Microsoft documentation, custom events use the {microsoft.custom_event.name} placeholder
+        // When logged through the OpenTelemetry ILogger, this attribute is recognized by the Azure Monitor exporter
+        // and stored in the customEvents table instead of traces.
+        //
+        // Since we need to bypass Serilog for this to work properly, we use the custom event logger
+        // Reference: https://learn.microsoft.com/en-us/azure/azure-monitor/app/opentelemetry-add-modify?tabs=aspnetcore#send-custom-events
+        
+        // The exact pattern from Microsoft docs:
+        // logger.LogInformation("{microsoft.custom_event.name} {additional_attrs}", "test-event-name", "val1");
+        if (additionalAttributes.Length == 0)
+        {
+            _customEventLogger.LogInformation("{microsoft.custom_event.name}", eventName);
+        }
+        else if (additionalAttributes.Length == 1)
+        {
+            _customEventLogger.LogInformation("{microsoft.custom_event.name} {additional_attrs}", eventName, additionalAttributes[0]);
+        }
+        else
+        {
+            _customEventLogger.LogInformation("{microsoft.custom_event.name} {additional_attrs}", eventName, string.Join(", ", additionalAttributes));
+        }
+    }
+
     public void TrackEvent(string eventName, IDictionary<string, string>? properties = null, IDictionary<string, double>? metrics = null)
     {
         using var activity = ActivitySource.StartActivity(eventName, ActivityKind.Internal);
@@ -78,11 +114,17 @@ public class AzureMonitorLogger : IAzureMonitorLogger
             return;
         }
 
+        var tags = new ActivityTagsCollection();
+        
+        // Add semantic convention tags for Azure Monitor custom events
+        tags.Add("customEvent.name", eventName);
+
         if (properties != null)
         {
             foreach (var property in properties)
             {
                 activity.SetTag(property.Key, property.Value);
+                tags.Add($"customEvent.properties.{property.Key}", property.Value);
             }
         }
 
@@ -91,10 +133,11 @@ public class AzureMonitorLogger : IAzureMonitorLogger
             foreach (var metric in metrics)
             {
                 activity.SetTag($"metric.{metric.Key}", metric.Value);
+                tags.Add($"customEvent.measurements.{metric.Key}", metric.Value);
             }
         }
 
-        activity.AddEvent(new ActivityEvent(eventName));
+        activity.AddEvent(new ActivityEvent(eventName, tags: tags));
     }
 
     public void TrackMetric(string metricName, double value, IDictionary<string, string>? properties = null)

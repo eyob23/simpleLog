@@ -52,4 +52,19 @@ public class HealthController : ControllerBase
 
         return Ok(healthData);
     }
+
+    [HttpGet("test-custom-event")]
+    public IActionResult TestCustomEvent()
+    {
+        // Test the LogCustomEvent method
+        _logger.LogCustomEvent("health-check-custom-event", "test-attribute-value");
+        
+        return Ok(new
+        {
+            message = "Custom event logged successfully",
+            eventName = "health-check-custom-event",
+            timestamp = DateTime.UtcNow
+        });
+    }
 }
+

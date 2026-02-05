@@ -18,6 +18,9 @@ try
 
     // Configure Azure Monitor OpenTelemetry logging
     builder.Services.AddAzureMonitorOpenTelemetryLogging(builder.Configuration);
+    
+    // Add Custom Event Logger for custom event tracking
+    builder.Services.AddCustomEventLogger();
 
     // Add Swagger/OpenAPI support
     builder.Services.AddEndpointsApiExplorer();
@@ -32,7 +35,11 @@ try
         app.UseSwaggerUI();
     }
 
-    app.UseHttpsRedirection();
+    if (!app.Environment.IsDevelopment() ||
+        !string.Equals(Environment.GetEnvironmentVariable("DISABLE_HTTPS_REDIRECTION"), "true", StringComparison.OrdinalIgnoreCase))
+    {
+        app.UseHttpsRedirection();
+    }
 
     app.UseAuthorization();
 

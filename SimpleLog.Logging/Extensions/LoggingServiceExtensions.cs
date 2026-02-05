@@ -48,4 +48,15 @@ public static class LoggingServiceExtensions
 
         return services;
     }
+
+    /// <summary>
+    /// Adds the CustomEventLogger service for logging custom events to Azure Monitor.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddCustomEventLogger(this IServiceCollection services)
+    {
+        services.AddSingleton<ICustomEventLogger, CustomEventLogger>();
+        return services;
+    }
 }
