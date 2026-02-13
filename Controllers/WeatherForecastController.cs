@@ -12,9 +12,9 @@ public class WeatherForecastController : ControllerBase
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-    private readonly IAzureMonitorLogger _logger;
+    private readonly IAppInsightsLogger _logger;
 
-    public WeatherForecastController(IAzureMonitorLogger logger)
+    public WeatherForecastController(IAppInsightsLogger logger)
     {
         _logger = logger;
     }

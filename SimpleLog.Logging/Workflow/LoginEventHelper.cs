@@ -11,7 +11,7 @@ public static class LoginEventHelper
     /// Tracks a user login action as a custom event with required and optional properties.
     /// </summary>
     public static bool TryTrackLogin(
-        IAzureMonitorLogger logger,
+        IAppInsightsLogger logger,
         string? userId,
         bool success,
         string? ipAddress,

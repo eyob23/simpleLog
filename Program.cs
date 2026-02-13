@@ -13,14 +13,17 @@ try
     // Add Serilog with Application Insights integration from Logging namespace
     builder.Host.AddSerilogLogging(builder.Configuration);
 
-    // Add services to the container
-    builder.Services.AddControllers();
+    // Configure Application Insights logging
+    builder.Services.AddSimpleLogLogging(builder.Configuration);
 
-    // Configure Azure Monitor OpenTelemetry logging
-    builder.Services.AddAzureMonitorOpenTelemetryLogging(builder.Configuration);
-    
     // Add Custom Event Logger for custom event tracking
     builder.Services.AddCustomEventLogger();
+
+    // Add Azure Monitor OpenTelemetry logging
+    builder.Services.AddAzureMonitorOpenTelemetryLogging(builder.Configuration);
+
+    // Add services to the container
+    builder.Services.AddControllers();
 
     // Add Swagger/OpenAPI support
     builder.Services.AddEndpointsApiExplorer();

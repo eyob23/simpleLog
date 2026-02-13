@@ -8,9 +8,9 @@ namespace SimpleLog.Api.Controllers;
 [Route("api/workflow")]
 public class WorkflowController : ControllerBase
 {
-    private readonly IAzureMonitorLogger _logger;
+    private readonly IAppInsightsLogger _logger;
 
-    public WorkflowController(IAzureMonitorLogger logger)
+    public WorkflowController(IAppInsightsLogger logger)
     {
         _logger = logger;
     }

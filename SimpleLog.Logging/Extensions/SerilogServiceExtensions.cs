@@ -21,11 +21,13 @@ public static class SerilogServiceExtensions
     {
         return builder.UseSerilog((context, services, loggerConfiguration) =>
         {
+            var serviceName = context.Configuration["Serilog:Properties:Application"] ?? "SimpleLog.Api";
+
             loggerConfiguration
                 .ReadFrom.Configuration(context.Configuration)
                 .ReadFrom.Services(services)
                 .Enrich.FromLogContext()
-                .Enrich.WithProperty("Application", "SimpleLog.Api")
+                .Enrich.WithProperty("Application", serviceName)
                 .MinimumLevel.Debug()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
@@ -42,15 +44,18 @@ public static class SerilogServiceExtensions
     /// <summary>
     /// Creates the initial bootstrap logger for application startup.
     /// </summary>
+    /// <param name="serviceName">Optional service name. Defaults to "SimpleLog.Api" if not provided.</param>
     /// <returns>The bootstrap logger configuration.</returns>
-    public static Serilog.ILogger CreateBootstrapLogger()
+    public static Serilog.ILogger CreateBootstrapLogger(string? serviceName = null)
     {
+        serviceName ??= "SimpleLog.Api";
+
         return new LoggerConfiguration()
             .MinimumLevel.Debug()
             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
             .Enrich.FromLogContext()
-            .Enrich.WithProperty("Application", "SimpleLog.Api")
+            .Enrich.WithProperty("Application", serviceName)
             .WriteTo.Console()
             .WriteTo.File(
                 path: "Logs/simplelog-.log",

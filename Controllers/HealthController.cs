@@ -7,9 +7,9 @@ namespace SimpleLog.Api.Controllers;
 [Route("api/[controller]")]
 public class HealthController : ControllerBase
 {
-    private readonly IAzureMonitorLogger _logger;
+    private readonly IAppInsightsLogger _logger;
 
-    public HealthController(IAzureMonitorLogger logger)
+    public HealthController(IAppInsightsLogger logger)
     {
         _logger = logger;
     }
@@ -56,8 +56,11 @@ public class HealthController : ControllerBase
     [HttpGet("test-custom-event")]
     public IActionResult TestCustomEvent()
     {
-        // Test the LogCustomEvent method
-        _logger.LogCustomEvent("health-check-custom-event", "test-attribute-value");
+        // Test a custom event
+        _logger.TrackEvent("health-check-custom-event", new Dictionary<string, string>
+        {
+            { "attribute", "test-attribute-value" }
+        });
         
         return Ok(new
         {
